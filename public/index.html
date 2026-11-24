@@ -392,6 +392,17 @@ html:root:root:root:not([data-theme="dark"]){--bg:#ffffff!important;--card:#ffff
 :root[data-theme="dark"] .top>.node.dir .dinfo span{color:#1b5fb4!important}
 :root[data-theme="dark"] .top>.node.dir .dpr,:root[data-theme="dark"] .top>.node.dir .dpr svg{color:#1b5fb4!important}
 :root[data-theme="dark"] .top>.node.dir .dpr{background:#e9f0fb!important;border-radius:8px}
+/* ===== Final icon/control colours: director controls white in dark, black in light; nav icons always blue ===== */
+:root[data-theme="dark"] .top>.node.dir .dinfo,:root[data-theme="dark"] .top>.node.dir .dinfo *{background:#0e1626!important;color:#ffffff!important}
+:root[data-theme="dark"] .top>.node.dir .dinfo{border:1px solid #ffffff!important}
+:root[data-theme="dark"] .top>.node.dir .dpr{background:#0e1626!important;color:#ffffff!important;border:1px solid #ffffff!important;border-radius:8px}
+:root[data-theme="dark"] .top>.node.dir .dpr svg{color:#ffffff!important;stroke:#ffffff!important}
+:root:not([data-theme="dark"]) .top>.node.dir .dinfo{background:#ffffff!important;color:#000000!important;border:1px solid #000000!important}
+:root:not([data-theme="dark"]) .top>.node.dir .dinfo *{color:#000000!important}
+:root:not([data-theme="dark"]) .top>.node.dir .dpr{background:#ffffff!important;color:#000000!important;border:1px solid #000000!important;border-radius:8px}
+:root:not([data-theme="dark"]) .top>.node.dir .dpr svg{color:#000000!important;stroke:#000000!important}
+:root .gnav .gi-ic,:root .gnav .gi-ic svg{color:#1b5fb4!important;stroke:#1b5fb4!important}
+:root .gnav button span{color:inherit}
 </style>
 </head>
 <body>
