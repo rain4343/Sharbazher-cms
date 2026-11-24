@@ -59,6 +59,44 @@ async function getGuide() {
 async function saveGuide(g) { await store().setJSON('guide', g); }
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined).map(k => [k, String(obj[k]).slice(0, 500)]));
 
+
+// ---------- records (staff & schools) ----------
+const STAFF_KEYS = ['place', 'placeType', 'name', 'role', 'gender', 'ty', 'deg', 'sp', 'tel', 'lv', 'lt'];
+const SCHOOL_KEYS = ['name', 'stage', 'subdistrict', 'principal', 'lat', 'lng'];
+const COLS = { staff: STAFF_KEYS, schools: SCHOOL_KEYS };
+async function getRecords() { return (await store().get('records', { type: 'json' })) || { staff: [], schools: [], version: 0 }; }
+async function saveRecords(r) { r.version = (r.version || 0) + 1; r.updated = new Date().toISOString(); await store().setJSON('records', r); }
+const newId = () => randomBytes(8).toString('hex');
+function cleanRecord(o, keys) {
+  const out = {};
+  for (const k of keys) {
+    if (o[k] === undefined) continue;
+    out[k] = typeof o[k] === 'boolean' ? o[k] : String(o[k]).slice(0, 300);
+  }
+  if ('lv' in out) out.lv = !!out.lv;
+  for (const k of ['lat', 'lng']) if (k in out) { const n = parseFloat(out[k]); out[k] = Number.isFinite(n) ? n : ''; }
+  return out;
+}
+function importFromData(d) {
+  if (!d || !Array.isArray(d.diwan) || !d.schools) throw new Error('فایلی داتا هەڵەیە (پێویستە data.json بێت)');
+  const gi = (d.fields || []).findIndex(f => f[0] === 'ڕەگەز');
+  const staff = [], schools = [];
+  const mk = (place, type, m) => ({
+    id: newId(), place, placeType: type, name: m.name || '', role: m.role || '',
+    gender: gi >= 0 && Array.isArray(m.d) ? (m.d[gi] || '') : '',
+    ty: m.ty || '', deg: m.deg || '', sp: m.sp || '', tel: m.tel || '', lv: !!m.lv, lt: m.lt || ''
+  });
+  d.diwan.forEach(u => (u.members || []).forEach(m => staff.push(mk(u.name, 'unit', m))));
+  for (const stage of ['basic', 'prep', 'mid', 'kg']) {
+    (d.schools[stage] || []).forEach(sc => {
+      const principal = (sc.members || []).filter(x => x.role === 'بەڕێوەبەر').map(x => x.name).join('، ');
+      schools.push({ id: newId(), name: sc.name, stage, subdistrict: '', principal });
+      (sc.members || []).forEach(m => staff.push(mk(sc.name, 'school', m)));
+    });
+  }
+  return { staff, schools, version: 0 };
+}
+
 // ---------- router ----------
 export default async (req, context) => {
   try {
@@ -135,6 +173,38 @@ export default async (req, context) => {
       g.transactions = (Array.isArray(body.transactions) ? body.transactions : []).slice(0, 200);
       await saveGuide(g);
       return send(200, { ok: true });
+    }
+
+
+    if (route[0] === 'records') {
+      if (me.role !== 'plan') return fail(403, 'تەنها هۆبەی پلان');
+      if (method === 'GET' && route.length === 1) return send(200, await getRecords());
+      if (method === 'POST' && route[1] === 'import') {
+        const body = await req.json();
+        const r = importFromData(body.data);
+        await saveRecords(r);
+        return send(201, { ok: true, staff: r.staff.length, schools: r.schools.length });
+      }
+      const col = route[1];
+      if (!COLS[col]) return fail(404, 'جۆری داتا نەدۆزرایەوە');
+      const r = await getRecords();
+      if (method === 'POST' && route.length === 2) {
+        const item = { id: newId(), ...cleanRecord(await req.json(), COLS[col]) };
+        r[col].push(item); await saveRecords(r);
+        return send(201, { ok: true, item });
+      }
+      const id = route[2];
+      const idx = r[col].findIndex(x => x.id === id);
+      if (idx < 0) return fail(404, 'تۆمار نەدۆزرایەوە');
+      if (method === 'PUT') {
+        r[col][idx] = { id, ...cleanRecord({ ...r[col][idx], ...(await req.json()) }, COLS[col]) };
+        await saveRecords(r);
+        return send(200, { ok: true, item: r[col][idx] });
+      }
+      if (method === 'DELETE') {
+        r[col].splice(idx, 1); await saveRecords(r);
+        return send(200, { ok: true });
+      }
     }
 
     if (route[0] === 'users') {

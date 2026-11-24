@@ -87,6 +87,48 @@ button.danger{background:transparent;color:var(--red);border:1px solid var(--red
       <textarea id="faqText" style="min-height:220px"></textarea>
       <button onclick="saveFaq()">پاشەکەوتکردن</button>
     </div>
+
+    <div id="tab-data" class="hide">
+      <h2>هاوردەکردنی داتا</h2>
+      <p class="mut">فایلی <b>data.json</b> هەڵبژێرە کە لە ئامێرەکەتدایە. ئەمە هەموو هۆبەکان، قوتابخانەکان و فەرمانبەران دەکاتە داتای سەرەکی (ئەگەر پێشتر داتا هەبێت، دەسڕێتەوە).</p>
+      <input type="file" id="dataFile" accept=".json,application/json">
+      <button onclick="importData()">هاوردەکردن</button>
+      <h2>قوتابخانەکان</h2>
+      <div class="row">
+        <input id="scName" placeholder="ناوی قوتابخانە">
+        <select id="scStage"><option value="basic">بنەڕەتی</option><option value="prep">ئامادەیی</option><option value="mid">دواناوەندی</option><option value="kg">باخچەی منداڵان</option></select>
+        <input id="scSub" placeholder="ناوچە (ئارەزووی)">
+        <input id="scPrin" placeholder="بەڕێوەبەر (ئارەزووی)">
+        <input id="scLat" placeholder="Latitude (مەسەلەن 35.5)" dir="ltr">
+        <input id="scLng" placeholder="Longitude (مەسەلەن 45.4)" dir="ltr">
+      </div>
+      <input type="hidden" id="scId">
+      <button onclick="saveSchool()">پاشەکەوت</button> <button class="ghost" onclick="resetSchool()">پاککردنەوە</button>
+      <div id="schoolList"></div>
+      <h2>فەرمانبەران و مامۆستایان</h2>
+      <div class="row">
+        <input id="stSearch" placeholder="گەڕان بە ناو یان شوێن" oninput="renderStaff()">
+        <select id="stType" onchange="renderStaff()"><option value="">هەموو جۆرەکان</option><option value="unit">هۆبە</option><option value="school">قوتابخانە</option></select>
+      </div>
+      <div class="row">
+        <input id="fName" placeholder="ناو">
+        <select id="fType" onchange="fillPlaces()"><option value="unit">هۆبە</option><option value="school">قوتابخانە</option></select>
+        <select id="fPlace"></select>
+        <input id="fRole" placeholder="ناونیشان">
+      </div>
+      <div class="row">
+        <select id="fGender"><option value="">ڕەگەز</option><option>مێ</option><option>نێر</option></select>
+        <select id="fTy"><option value="">جۆری دامەزراندن</option><option>هەمیشەیی</option><option>گرێبەست</option></select>
+        <input id="fDeg" placeholder="بڕوانامە">
+        <input id="fSp" placeholder="پسپۆڕی">
+        <input id="fTel" placeholder="مۆبایل" dir="ltr">
+      </div>
+      <label class="mut"><input type="checkbox" id="fLv" style="width:auto"> لە مۆڵەتدایە</label>
+      <input type="hidden" id="stId">
+      <button onclick="saveStaff()">پاشەکەوت</button> <button class="ghost" onclick="resetStaff()">پاککردنەوە</button>
+      <p class="mut" id="stCount"></p>
+      <div id="staffList"></div>
+    </div>
   </section>
 </div>
 
@@ -114,7 +156,7 @@ function showApp(){
   show('login', false); show('setup', false); show('app', true);
   $('meLine').textContent = `${me.username} · ${me.unit}`;
   const isPlan = me.role === 'plan';
-  const tabs = [['unit','زانیاری هۆبە']].concat(isPlan ? [['users','ئەکاونتەکان'],['faq','پرسیارە باوەکان']] : []);
+  const tabs = [['unit','زانیاری هۆبە']].concat(isPlan ? [['data','داتای هۆبەکان'],['users','ئەکاونتەکان'],['faq','پرسیارە باوەکان']] : []);
   $('tabs').innerHTML = tabs.map(([k,l],i)=>`<button data-t="${k}" class="${i?'':'on'}" onclick="tab('${k}')">${l}</button>`).join('');
   const sel = $('uSel');
   sel.innerHTML = units.filter(n => isPlan || n === me.unit).map(n=>`<option value="${n}">${n}</option>`).join('');
@@ -125,7 +167,8 @@ function showApp(){
   tab('unit');
 }
 function tab(k){
-  ['unit','users','faq'].forEach(x=>{ const el=$('tab-'+x); if(el) show('tab-'+x, x===k); });
+  ['unit','data','users','faq'].forEach(x=>{ const el=$('tab-'+x); if(el) show('tab-'+x, x===k); });
+  if(k==='data') loadData();
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.t===k));
 }
 function fillUnit(){
@@ -176,6 +219,69 @@ async function saveFaq(){
     await boot();
   }catch(e){ msg('پەیوەندی بە سێرڤەر نەبوو: '+e.message,false); show('login',true); }
 })();
+
+let DATA = {staff:[], schools:[]};
+async function loadData(){
+  try{ DATA = await api('/records'); renderSchools(); fillPlaces(); renderStaff(); }
+  catch(e){ msg(e.message,false); }
+}
+async function importData(){
+  const f = $('dataFile').files[0]; if(!f) return msg('فایل هەڵبژێرە',false);
+  if(!confirm('داتای ئێستا دەسڕێتەوە و داتای نوێ دادەنرێت. بەردەوام بیت؟')) return;
+  try{ const json = JSON.parse(await f.text());
+    const r = await api('/records/import',{method:'POST',body:JSON.stringify({data:json})});
+    msg(`هاوردە کرا: ${r.staff} فەرمانبەر، ${r.schools} قوتابخانە`,true); loadData(); }
+  catch(e){ msg(e.message,false); }
+}
+const STAGE = {basic:'بنەڕەتی',prep:'ئامادەیی',mid:'دواناوەندی',kg:'باخچەی منداڵان'};
+function renderSchools(){
+  $('schoolList').innerHTML = (DATA.schools||[]).map(s=>`<div class="user"><span>${s.name} — ${STAGE[s.stage]||''}${s.subdistrict?' · '+s.subdistrict:''}${s.principal?' · '+s.principal:''}${(s.lat!==undefined&&s.lat!==''&&s.lng!==undefined&&s.lng!=='')?' · GPS: '+s.lat+', '+s.lng:' · GPS: نەنووسراوە'}</span><span><button class="ghost" onclick="editSchool('${s.id}')">دەستکاری</button> <button class="danger" onclick="delRec('schools','${s.id}')">سڕینەوە</button></span></div>`).join('') || '<p class="mut">هیچ قوتابخانەیەک نییە</p>';
+}
+function editSchool(id){ const s=DATA.schools.find(x=>x.id===id); if(!s)return;
+  $('scId').value=id; $('scName').value=s.name; $('scStage').value=s.stage; $('scSub').value=s.subdistrict||''; $('scPrin').value=s.principal||''; $('scLat').value=s.lat??''; $('scLng').value=s.lng??''; }
+function resetSchool(){ ['scId','scName','scSub','scPrin','scLat','scLng'].forEach(i=>$(i).value=''); $('scStage').value='basic'; }
+async function saveSchool(){
+  const body={name:$('scName').value,stage:$('scStage').value,subdistrict:$('scSub').value,principal:$('scPrin').value,lat:$('scLat').value,lng:$('scLng').value};
+  if(!body.name.trim()) return msg('ناوی قوتابخانە بنووسە',false);
+  try{ const id=$('scId').value;
+    await api(id?'/records/schools/'+id:'/records/schools',{method:id?'PUT':'POST',body:JSON.stringify(body)});
+    msg('پاشەکەوت کرا',true); resetSchool(); loadData(); }
+  catch(e){ msg(e.message,false); }
+}
+function placesFor(type){
+  return type==='school' ? (DATA.schools||[]).map(s=>s.name) : units;
+}
+function fillPlaces(){
+  const t=$('fType').value; const cur=$('fPlace').value;
+  $('fPlace').innerHTML = placesFor(t).map(n=>`<option value="${n}">${n}</option>`).join('');
+  if(cur) $('fPlace').value=cur;
+}
+function staffFiltered(){
+  const q=($('stSearch').value||'').trim(), t=$('stType').value;
+  return (DATA.staff||[]).filter(x=>(!t||x.placeType===t)&&(!q||(x.name||'').includes(q)||(x.place||'').includes(q)));
+}
+function renderStaff(){
+  const all=staffFiltered(); const list=all.slice(0,200);
+  $('staffList').innerHTML = list.map(x=>`<div class="user"><span>${x.name} — ${x.place}${x.role?' · '+x.role:''}${x.lv?' · مۆڵەت':''}</span><span><button class="ghost" onclick="editStaff('${x.id}')">دەستکاری</button> <button class="danger" onclick="delRec('staff','${x.id}')">سڕینەوە</button></span></div>`).join('');
+  $('stCount').textContent = `${all.length} تۆمار${all.length>200?' (تەنها ٢٠٠ی یەکەم پیشان دەدرێت، گەڕان بکە)':''}`;
+}
+function editStaff(id){ const x=DATA.staff.find(s=>s.id===id); if(!x)return;
+  $('stId').value=id; $('fName').value=x.name||''; $('fType').value=x.placeType||'unit'; fillPlaces(); $('fPlace').value=x.place||'';
+  $('fRole').value=x.role||''; $('fGender').value=x.gender||''; $('fTy').value=x.ty||''; $('fDeg').value=x.deg||''; $('fSp').value=x.sp||''; $('fTel').value=x.tel||''; $('fLv').checked=!!x.lv; window.scrollTo(0,0); }
+function resetStaff(){ ['stId','fName','fRole','fDeg','fSp','fTel'].forEach(i=>$(i).value=''); $('fGender').value=''; $('fTy').value=''; $('fLv').checked=false; }
+async function saveStaff(){
+  const body={name:$('fName').value,placeType:$('fType').value,place:$('fPlace').value,role:$('fRole').value,gender:$('fGender').value,ty:$('fTy').value,deg:$('fDeg').value,sp:$('fSp').value,tel:$('fTel').value,lv:$('fLv').checked};
+  if(!body.name.trim()) return msg('ناو بنووسە',false);
+  try{ const id=$('stId').value;
+    await api(id?'/records/staff/'+id:'/records/staff',{method:id?'PUT':'POST',body:JSON.stringify(body)});
+    msg('پاشەکەوت کرا',true); resetStaff(); loadData(); }
+  catch(e){ msg(e.message,false); }
+}
+async function delRec(col,id){
+  if(!confirm('ئەم تۆمارە بسڕدرێتەوە؟')) return;
+  try{ await api(`/records/${col}/${id}`,{method:'DELETE'}); loadData(); }
+  catch(e){ msg(e.message,false); }
+}
 </script>
 </body>
 </html>
