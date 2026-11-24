@@ -238,7 +238,7 @@ function renderSchools(){
   $('schoolList').innerHTML = (DATA.schools||[]).map(s=>`<div class="user"><span>${s.name} — ${STAGE[s.stage]||''}${s.subdistrict?' · '+s.subdistrict:''}${s.principal?' · '+s.principal:''}${(s.lat!==undefined&&s.lat!==''&&s.lng!==undefined&&s.lng!=='')?' · GPS: '+s.lat+', '+s.lng:' · GPS: نەنووسراوە'}</span><span><button class="ghost" onclick="editSchool('${s.id}')">دەستکاری</button> <button class="danger" onclick="delRec('schools','${s.id}')">سڕینەوە</button></span></div>`).join('') || '<p class="mut">هیچ قوتابخانەیەک نییە</p>';
 }
 function editSchool(id){ const s=DATA.schools.find(x=>x.id===id); if(!s)return;
-  $('scId').value=id; $('scName').value=s.name; $('scStage').value=s.stage; $('scSub').value=s.subdistrict||''; $('scPrin').value=s.principal||''; $('scLat').value=s.lat??''; $('scLng').value=s.lng??''; }
+  $('scId').value=id; $('scName').value=s.name; $('scStage').value=s.stage; $('scSub').value=s.subdistrict||''; $('scPrin').value=s.principal||''; $('scLat').value=s.lat??''; $('scLng').value=s.lng??''; $('scName').scrollIntoView({behavior:'smooth',block:'center'}); msg('فۆرمی قوتابخانە پڕ کرایەوە — دەستکاریی بکە و پاشەکەوتی بکە',true); }
 function resetSchool(){ ['scId','scName','scSub','scPrin','scLat','scLng'].forEach(i=>$(i).value=''); $('scStage').value='basic'; }
 async function saveSchool(){
   const body={name:$('scName').value,stage:$('scStage').value,subdistrict:$('scSub').value,principal:$('scPrin').value,lat:$('scLat').value,lng:$('scLng').value};
@@ -267,7 +267,7 @@ function renderStaff(){
 }
 function editStaff(id){ const x=DATA.staff.find(s=>s.id===id); if(!x)return;
   $('stId').value=id; $('fName').value=x.name||''; $('fType').value=x.placeType||'unit'; fillPlaces(); $('fPlace').value=x.place||'';
-  $('fRole').value=x.role||''; $('fGender').value=x.gender||''; $('fTy').value=x.ty||''; $('fDeg').value=x.deg||''; $('fSp').value=x.sp||''; $('fTel').value=x.tel||''; $('fLv').checked=!!x.lv; window.scrollTo(0,0); }
+  $('fRole').value=x.role||''; $('fGender').value=x.gender||''; $('fTy').value=x.ty||''; $('fDeg').value=x.deg||''; $('fSp').value=x.sp||''; $('fTel').value=x.tel||''; $('fLv').checked=!!x.lv; $('fName').scrollIntoView({behavior:'smooth',block:'center'}); msg('فۆرمی فەرمانبەر پڕ کرایەوە — دەستکاریی بکە و پاشەکەوتی بکە',true); }
 function resetStaff(){ ['stId','fName','fRole','fDeg','fSp','fTel'].forEach(i=>$(i).value=''); $('fGender').value=''; $('fTy').value=''; $('fLv').checked=false; }
 async function saveStaff(){
   const body={name:$('fName').value,placeType:$('fType').value,place:$('fPlace').value,role:$('fRole').value,gender:$('fGender').value,ty:$('fTy').value,deg:$('fDeg').value,sp:$('fSp').value,tel:$('fTel').value,lv:$('fLv').checked};
