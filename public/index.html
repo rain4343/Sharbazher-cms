@@ -386,6 +386,12 @@ html:root:root:root:not([data-theme="dark"]){--bg:#ffffff!important;--card:#ffff
 :root[data-theme="dark"] .top>.node.dir{background:#ffffff!important;color:#000000!important}
 :root[data-theme="dark"] .top>.node .dnm{background:#e6f6ea!important;color:#000000!important}
 :root[data-theme="dark"] .top>.node.l1,:root[data-theme="dark"] .top>.node.l2,:root[data-theme="dark"] .top>.node.l3{background:#ffffff!important}
+/* ===== Dark mode: director card controls stay visible (black on light) ===== */
+:root[data-theme="dark"] .top>.node.dir *{color:#000000!important}
+:root[data-theme="dark"] .top>.node.dir .dinfo{background:#e9f0fb!important;border:1px solid #1b5fb4!important;color:#1b5fb4!important}
+:root[data-theme="dark"] .top>.node.dir .dinfo span{color:#1b5fb4!important}
+:root[data-theme="dark"] .top>.node.dir .dpr,:root[data-theme="dark"] .top>.node.dir .dpr svg{color:#1b5fb4!important}
+:root[data-theme="dark"] .top>.node.dir .dpr{background:#e9f0fb!important;border-radius:8px}
 </style>
 </head>
 <body>
