@@ -351,21 +351,33 @@ header .sp p.en-t{color:#000000!important;opacity:1!important}
 :root[data-theme="dark"] header h1,:root[data-theme="dark"] header .sp p.en-t,:root:not([data-theme="light"]) header h1,:root:not([data-theme="light"]) header .sp p.en-t{color:#000000!important}
 header img{background:#ffffff!important}
 /* ===== Force a light page with black text everywhere (both system and manual dark mode) ===== */
-html:root:root:root{--bg:#ffffff!important;--card:#ffffff!important;--ink:#000000!important;--mut:#000000!important;--line:#c9d2e0!important;--soft:#eef3fa!important;--blue:#1b5fb4!important;--shadow:0 6px 22px rgba(0,0,0,.08)!important;--dot:rgba(0,0,0,.05)!important;color-scheme:light!important}
-html,body{background:#ffffff!important;color:#000000!important}
-body *:not(svg):not(svg *):not(img):not(iframe){color:#000000}
-body .gbtnrow a:not(.alt){color:#ffffff!important;background:#1b5fb4;text-decoration:none}
-body .gbtnrow a.alt,body .gbtnrow button.alt{color:#000000!important;background:#ffffff;border:1px solid #1b5fb4}
-body .gbtnrow button:not(.alt){color:#ffffff!important;background:#1b5fb4}
-body .gnav{background:#ffffff!important;border:1px solid #000000!important}
-body .gnav button:hover{background:#eef3fa!important}
-body .pwa-bar{background:#ffffff!important;color:#000000!important;border:1px solid #000000!important}
-body #pwa-go{background:#000000!important;color:#ffffff!important}
-body .gmap{background:#ffffff!important;border:1px solid #000000!important}
-body .gf button.on{background:#000000!important;color:#ffffff!important;border-color:#000000!important}
-body .gbtn,body .gtx .gbtn{color:#ffffff!important;background:#1b5fb4!important}
-body .att-lock button,body .att-actions button{color:#ffffff!important;background:#1b5fb4!important}
-body .ab button.on,body .seg button.on{color:#ffffff!important}
+html:root:root:root:not([data-theme="dark"]){--bg:#ffffff!important;--card:#ffffff!important;--ink:#000000!important;--mut:#000000!important;--line:#c9d2e0!important;--soft:#eef3fa!important;--blue:#1b5fb4!important;--shadow:0 6px 22px rgba(0,0,0,.08)!important;--dot:rgba(0,0,0,.05)!important;color-scheme:light!important}
+:root:not([data-theme="dark"]) html,body{background:#ffffff!important;color:#000000!important}
+:root:not([data-theme="dark"]) body *:not(svg):not(svg *):not(img):not(iframe){color:#000000}
+:root:not([data-theme="dark"]) body .gbtnrow a:not(.alt){color:#ffffff!important;background:#1b5fb4;text-decoration:none}
+:root:not([data-theme="dark"]) body .gbtnrow a.alt,body .gbtnrow button.alt{color:#000000!important;background:#ffffff;border:1px solid #1b5fb4}
+:root:not([data-theme="dark"]) body .gbtnrow button:not(.alt){color:#ffffff!important;background:#1b5fb4}
+:root:not([data-theme="dark"]) body .gnav{background:#ffffff!important;border:1px solid #000000!important}
+:root:not([data-theme="dark"]) body .gnav button:hover{background:#eef3fa!important}
+:root:not([data-theme="dark"]) body .pwa-bar{background:#ffffff!important;color:#000000!important;border:1px solid #000000!important}
+:root:not([data-theme="dark"]) body #pwa-go{background:#000000!important;color:#ffffff!important}
+:root:not([data-theme="dark"]) body .gmap{background:#ffffff!important;border:1px solid #000000!important}
+:root:not([data-theme="dark"]) body .gf button.on{background:#000000!important;color:#ffffff!important;border-color:#000000!important}
+:root:not([data-theme="dark"]) body .gbtn,body .gtx .gbtn{color:#ffffff!important;background:#1b5fb4!important}
+:root:not([data-theme="dark"]) body .att-lock button,body .att-actions button{color:#ffffff!important;background:#1b5fb4!important}
+:root:not([data-theme="dark"]) body .ab button.on,body .seg button.on{color:#ffffff!important}
+/* ===== Dark theme (toggle button) ===== */
+:root[data-theme="dark"]{--bg:#0e1626!important;--card:#16223a!important;--ink:#f1f5ff!important;--mut:#a9b8d6!important;--line:#2f4166!important;--soft:#1d2d4d!important;--blue:#6aa8ff!important;--shadow:0 6px 22px rgba(0,0,0,.4)!important;--dot:rgba(255,255,255,.12)!important;color-scheme:dark!important}
+:root[data-theme="dark"] body{background:#0e1626!important;color:#f1f5ff!important}
+:root[data-theme="dark"] body *:not(svg):not(svg *):not(img):not(iframe){color:#f1f5ff}
+:root[data-theme="dark"] header{background:#16223a!important;border-color:#2f4166!important}
+:root[data-theme="dark"] header h1,:root[data-theme="dark"] header .sp p.en-t{color:#4ade80!important}
+:root[data-theme="dark"] .gnav{background:rgba(14,22,38,.92)!important;border-color:#2f4166!important}
+:root[data-theme="dark"] .gnav button{color:#f1f5ff!important}
+:root[data-theme="dark"] .pwa-bar{background:#16223a!important;color:#f1f5ff!important;border-color:#4f9bff!important}
+:root[data-theme="dark"] #pwa-go{background:#4f9bff!important;color:#0e1626!important}
+:root[data-theme="dark"] .gbtnrow a:not(.alt),:root[data-theme="dark"] .gbtnrow button:not(.alt){color:#ffffff!important;background:#1b5fb4!important}
+:root[data-theme="dark"] .gbtnrow a.alt,:root[data-theme="dark"] .gbtnrow button.alt{color:#f1f5ff!important;background:#16223a!important;border-color:#4f9bff!important}
 </style>
 </head>
 <body>
@@ -458,7 +470,7 @@ $('#q').oninput=e=>{const v=e.target.value.trim();renderSR(v);
   const hit=!v||x.name.includes(v)||(x.principal||'').includes(v)||(x.members||[]).some(m=>m.name.includes(v)||m.tel.includes(v));b.style.display=hit?'':'none'});
   });
 };
-$('#th').onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue('--bg').trim()=='#0e1626';r.dataset.theme=d?'light':'dark'};
+$('#th').onclick=()=>{const r=document.documentElement;const cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark';};
 
 /* ===== Org-chart motion: SVG connectors that draw themselves + particle-network background ===== */
 (function(){
